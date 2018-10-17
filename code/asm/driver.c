@@ -1,6 +1,6 @@
 int main()
 {
   int ret_status;
-  ret_status = _asm_main();
+  ret_status = asm_main();
   return ret_status;
 }
