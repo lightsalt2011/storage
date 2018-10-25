@@ -82,7 +82,7 @@ _asm_main:
 
 	popa
 	mov     eax, 0            ; return back to C
-	leave			  
+	leave
 	ret
 
 
