@@ -45,8 +45,8 @@ int on_header_value(http_parser *parser, const char *at, size_t length)
 int main(int argc, char *argv[])
 {
     int ret;
-    http_parser_settings settings;
-    http_parser parser;
+    http_parser_settings settings __rte_cache_aligned;
+    http_parser parser __rte_cache_aligned;
     char *filename;
     FILE *file;
     long file_length;
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     uint32_t i, N = 0;
 
     if (argc != 3) {
-        printf("usage: %s <file> <loop count>\n", argv[0]);
+        fprintf(stderr, "usage: %s <file> <loop count>\n", argv[0]);
         return -1;
     }
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
     N = atoi(argv[2]);
     if (N == 0 || N > INT_MAX) {
-        printf("loop count %u is invalid\n", N);
+        fprintf(stderr, "loop count %u is invalid\n", N);
         goto fail;
     }
 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 
     ret = posix_memalign((void**)&httpInfo, RTE_CACHE_LINE_SIZE, sizeof(HttpInfo_t));
     if (ret != 0) {
-        printf("malloc httpInfo failed\n");
+        fprintf(stderr, "malloc httpInfo failed\n");
         goto fail;
     }
 
