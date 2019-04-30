@@ -111,6 +111,7 @@ int parseHttp(char *data, uint32_t dataLen, HttpInfo_t *httpInfo)
     size_t i, num_headers;
 
     ctx.httpInfo = httpInfo;
+    num_headers = 32;
 
     phr_parse_request(data, dataLen, &method, &method_len, &path, &path_len, &minor_version,
                       headers, &num_headers, 0);
