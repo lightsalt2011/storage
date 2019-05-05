@@ -412,7 +412,9 @@ static const char* parse_headers(const char* buf, const char* buf_end,
       return NULL;
     }
 
-    if (! (n_headers != 0 && (*buf == ' ' || *buf == '\t')) && !(*buf >= 65 && * buf <= 90)) {
+    // zzqcn
+    //if (! (n_headers != 0 && (*buf == ' ' || *buf == '\t')) && !(*buf >= 65 && * buf <= 90)) {
+    if (! (n_headers != 0 && (*buf == ' ' || *buf == '\t'))) {
       if (! token_char_map[(unsigned char)*buf]) {
         *ret = -1;
         *num_headers = n_headers;
