@@ -33,5 +33,8 @@ pico_hs_bench:
 pico_avx2_hs_bench:
 	$(CC) $(CFLAGS) -I$(HS_INCLUDE) -o $@ picohttpparser_avx2.c pico_avx2_hs_bench.c -L$(HS_LIB) -lhs
 
+pico_zzq_hs_bench:
+	$(CC) $(CFLAGS) -I$(HS_INCLUDE) -o $@ picohttpparser_zzq.c pico_zzq_hs_bench.c -L$(HS_LIB) -lhs
+
 clean:
 	rm -rf http_parser_bench hs_bench hs_lite_bench pico_hs_bench pico_avx2_hs_bench
