@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = 
 
 ifeq ($(ver), perf)
-	CFLAGS = -O3 -march=native -mtune=native -DNDEBUG
+	CFLAGS = -O3 -march=native -DNDEBUG
 else ifeq ($(ver), debug)
 	CFLAGS = -O0 -g -DDEBUG
 else

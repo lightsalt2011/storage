@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #ifndef __SSE4_2__
@@ -35,10 +36,7 @@ int str_cmpi_cmp(const char *a, const char *b)
         a16, b16,
         _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_LEAST_SIGNIFICANT);
 
-    if (r != 16)
-        printf("found at: %d\n", r);
-    else
-        printf("not found: %d\n", r);
+    printf("result: %d\n", r);
 
     return r;
 }
@@ -149,13 +147,13 @@ int main(void)
     int ret;
 
     // strcmp
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abcdefg");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "Abcdefg");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "ABCDefg");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abCDEFG");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abc#efg");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "##aBCDefg");
-    CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abcdefghijk");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abcdefg");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "Abcdefg");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "ABCDefg");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abCDEFG");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abc#efg");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "##aBCDefg");
+    // CALL_STR_FUNC(cmpi_cmp, "abcdefg", "abcdefghijk");
 
     CALL_STR_FUNC(cmpi_cmp_mask, "abcdefg", "abcdefg");
     CALL_STR_FUNC(cmpi_cmp_mask, "abcdefg", "Abcdefg");
@@ -179,6 +177,7 @@ int main(void)
     // strstr
     CALL_STR_FUNC(cmpi_substr, "abc", "######abc####");
     CALL_STR_FUNC(cmpi_substr, "abc", "####a#bc#####");
+    CALL_STR_FUNC(cmpi_substr, "abc", "#############");
 
     return 0;
 }

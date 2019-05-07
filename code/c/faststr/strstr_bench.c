@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #ifndef __SSE4_2__
@@ -52,17 +53,20 @@ static inline uint64_t rte_rdtsc(void)
 
 char *myStrstr(const char *haystack, const char *needle)
 {
-    int cmp;
+    int ret;
     __m128i ptn = _mm_loadu_si128((const __m128i *)needle);
     __m128i b16 = _mm_loadu_si128((const __m128i *)haystack);
 
-    cmp = _mm_cmpistri(ptn, b16, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT);
+    ret = _mm_cmpistri(ptn, b16, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ORDERED | _SIDD_LEAST_SIGNIFICANT);
 
-    return (char *)haystack + cmp;
+    if(ret == 16)
+        return NULL;
+
+    return (char *)haystack + ret;
 }
 
 #ifdef DEBUG
-#define LOOP_COUNT 10
+#define LOOP_COUNT 1
 #else
 #define LOOP_COUNT 1000000
 #endif

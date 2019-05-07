@@ -2,7 +2,7 @@
 ver = perf
 
 CC = gcc
-CFLAGS = -march=native -mtune=native
+CFLAGS = -march=native
 
 ifeq ($(ver), perf)
 	CFLAGS += -O3 -DNDEBUG
