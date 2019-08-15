@@ -1,0 +1,19 @@
+// zhaopeng, 2019.08.15
+
+perf
+------
+
+$./int2str
+---u16tostr----
+convert: 3
+str: 3|, 18         // APPFMT_CharToBuf('3', p);
+str: 3|, 25590      // APPFMT_U8ToBuf(g_u16StrMap, 3, p);
+---u16tostr----
+convert: 12345
+str: 12345|, 1332   // APPFMT_StrToBuf("12345", 5, p);
+str: 12345|, 26169  // APPFMT_U16ToBuf(g_u16StrMap, 12345, p);
+---int2hex---
+convert: 2147483647
+str: 0x7FFFFFFF, n: 8, 30429    // Int2Hex, 自写
+str: 0x7FFFFFFF, n: 8, 3231801  // Int2Hex2, sprintf
+
