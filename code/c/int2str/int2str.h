@@ -50,6 +50,7 @@ typedef struct APPFMT_U16MAP
     *(dst)++ = APPFMT_DELIMITER;
 
 /* 字符转换接口,srcLen<=0时，会添加分隔符 */
+#if 0
 #define APPFMT_StrToBuf(src, srcLen, dst)                 \
     if ((srcLen) > 0 && (src) != NULL && (dst) != NULL) { \
         XDR_Memcpy(dst, src, srcLen);                     \
@@ -58,6 +59,17 @@ typedef struct APPFMT_U16MAP
     } else {                                              \
         *(dst)++ = APPFMT_DELIMITER;                      \
     }
+#else
+#define APPFMT_StrToBuf(src, srcLen, dst)                 \
+        XDR_Memcpy(dst, src, srcLen);                     \
+        (dst) += (srcLen);                                \
+        *(dst)++ = APPFMT_DELIMITER;
+#endif
+
+#define APPFMT_ShortStrToBuf(src, srcLen, dst)  \
+    *((uint64_t*)(dst)) = *((uint64_t*)(src));  \
+    (dst) += (srcLen);                          \
+    *(dst)++ = APPFMT_DELIMITER;
 
 /* uint8转换接口 */
 #define APPFMT_U8ToBuf(u16Map, u8, dst)      \
