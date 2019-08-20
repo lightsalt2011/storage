@@ -72,7 +72,7 @@ typedef struct APPFMT_U16MAP
     (dst) += (srcLen);                           \
     *(dst)++ = APPFMT_DELIMITER;
 #else
-static inline void APPFMT_ShortStrToBuf(const void *src, size_t n, void *dst)
+static inline void _APPFMT_ShortStrToBufNoDelim(const void *src, size_t n, void *dst)
 {
     uintptr_t dstu = (uintptr_t)dst;
     uintptr_t srcu = (uintptr_t)src;
@@ -96,8 +96,17 @@ static inline void APPFMT_ShortStrToBuf(const void *src, size_t n, void *dst)
     if (n & 0x08) {
         *(uint64_t *)dstu = *(const uint64_t *)srcu;
     }
-    //}
+    //   }
 }
+
+#define APPFMT_ShortStrToBufNoDelim(src, srcLen, dst) \
+    _APPFMT_ShortStrToBufNoDelim(src, srcLen, dst);   \
+    (dst) += (srcLen);
+
+#define APPFMT_ShortStrToBuf(src, srcLen, dst)     \
+    APPFMT_ShortStrToBufNoDelim(src, srcLen, dst); \
+    *(dst)++ = APPFMT_DELIMITER;
+
 #endif
 
 /* uint8转换接口 */
