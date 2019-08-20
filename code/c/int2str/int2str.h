@@ -60,16 +60,45 @@ typedef struct APPFMT_U16MAP
         *(dst)++ = APPFMT_DELIMITER;                      \
     }
 #else
-#define APPFMT_StrToBuf(src, srcLen, dst)                 \
-        XDR_Memcpy(dst, src, srcLen);                     \
-        (dst) += (srcLen);                                \
-        *(dst)++ = APPFMT_DELIMITER;
+#define APPFMT_StrToBuf(src, srcLen, dst) \
+    XDR_Memcpy(dst, src, srcLen);         \
+    (dst) += (srcLen);                    \
+    *(dst)++ = APPFMT_DELIMITER;
 #endif
 
-#define APPFMT_ShortStrToBuf(src, srcLen, dst)  \
-    *((uint64_t*)(dst)) = *((uint64_t*)(src));  \
-    (dst) += (srcLen);                          \
+#if 0
+#define APPFMT_ShortStrToBuf(src, srcLen, dst)   \
+    *((uint64_t *)(dst)) = *((uint64_t *)(src)); \
+    (dst) += (srcLen);                           \
     *(dst)++ = APPFMT_DELIMITER;
+#else
+static inline void APPFMT_ShortStrToBuf(const void *src, size_t n, void *dst)
+{
+    uintptr_t dstu = (uintptr_t)dst;
+    uintptr_t srcu = (uintptr_t)src;
+
+    //if (n < 16) {
+    if (n & 0x01) {
+        *(uint8_t *)dstu = *(const uint8_t *)srcu;
+        srcu             = (uintptr_t)((const uint8_t *)srcu + 1);
+        dstu             = (uintptr_t)((uint8_t *)dstu + 1);
+    }
+    if (n & 0x02) {
+        *(uint16_t *)dstu = *(const uint16_t *)srcu;
+        srcu              = (uintptr_t)((const uint16_t *)srcu + 1);
+        dstu              = (uintptr_t)((uint16_t *)dstu + 1);
+    }
+    if (n & 0x04) {
+        *(uint32_t *)dstu = *(const uint32_t *)srcu;
+        srcu              = (uintptr_t)((const uint32_t *)srcu + 1);
+        dstu              = (uintptr_t)((uint32_t *)dstu + 1);
+    }
+    if (n & 0x08) {
+        *(uint64_t *)dstu = *(const uint64_t *)srcu;
+    }
+    //}
+}
+#endif
 
 /* uint8转换接口 */
 #define APPFMT_U8ToBuf(u16Map, u8, dst)      \
@@ -83,6 +112,7 @@ typedef struct APPFMT_U16MAP
     (dst) += u16Map[(u16)].StrLen;            \
     *(dst)++ = APPFMT_DELIMITER;
 
+// clang-format off
 
 static const char hexArray[] =
 {
@@ -90,12 +120,14 @@ static const char hexArray[] =
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 };
 
-static size_t Int2Hex(const char *hex, int num, char *dest)
+// clang-format on
+
+static inline size_t Int2Hex(const char *hex, int num, char *dest)
 {
     int a[16] = {0};
-    int i      = 0;
-    int m      = 0;
-    size_t lp  = 0;
+    int i     = 0;
+    int m     = 0;
+    size_t lp = 0;
     int yushu;
 
     while (num > 0) {
@@ -111,12 +143,12 @@ static size_t Int2Hex(const char *hex, int num, char *dest)
     return lp;
 }
 
-static size_t Int2Hex2(int num, char* dst)
+static inline size_t Int2Hex2(int num, char *dst)
 {
     return sprintf(dst, "%X", num);
 }
 
-extern APPFMT_U16MAP_S  g_u16StrMap[APPFMT_U16MAP_MAX];
+extern APPFMT_U16MAP_S g_u16StrMap[APPFMT_U16MAP_MAX];
 
 void InitU16StrMap(void);
 
