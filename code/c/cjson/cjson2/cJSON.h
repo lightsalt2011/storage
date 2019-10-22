@@ -120,6 +120,8 @@ typedef struct cJSON
 
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
     char *string;
+
+    int lineno;
 } cJSON;
 
 typedef struct cJSON_Hooks
@@ -172,6 +174,9 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const objec
 CJSON_PUBLIC(cJSON_bool) cJSON_HasObjectItem(const cJSON *object, const char *string);
 /* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
 CJSON_PUBLIC(const char *) cJSON_GetErrorPtr(void);
+
+#define CJSON_ERRBUF_SIZE 128
+CJSON_PUBLIC(const char*) cJSON_GetErrorMsg(char* err_buf);
 
 /* Check if the item is a string and return its valuestring */
 CJSON_PUBLIC(char *) cJSON_GetStringValue(cJSON *item);

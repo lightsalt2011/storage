@@ -71,12 +71,22 @@
 typedef struct {
     const unsigned char *json;
     size_t position;
+    int lineno;
 } error;
-static error global_error = { NULL, 0 };
+static error global_error = { NULL, 0, 0};
 
 CJSON_PUBLIC(const char *) cJSON_GetErrorPtr(void)
 {
     return (const char*) (global_error.json + global_error.position);
+}
+
+CJSON_PUBLIC(const char *) cJSON_GetErrorMsg(char* err_buf)
+{
+    if(err_buf == NULL)
+        return NULL;
+    snprintf(err_buf, CJSON_ERRBUF_SIZE, "line: %d, content: %s",
+        global_error.lineno, (global_error.json + global_error.position));
+    return err_buf;
 }
 
 CJSON_PUBLIC(char *) cJSON_GetStringValue(cJSON *item) {
@@ -261,6 +271,7 @@ typedef struct
     size_t length;
     size_t offset;
     size_t depth; /* How deeply nested (in arrays/objects) is the input at the current offset. */
+    int lineno;
     internal_hooks hooks;
 } parse_buffer;
 
@@ -979,6 +990,8 @@ static parse_buffer *buffer_skip_whitespace(parse_buffer * const buffer)
 
     while (can_access_at_index(buffer, 0) && (buffer_at_offset(buffer)[0] <= 32))
     {
+        if(buffer_at_offset(buffer)[0] == '\n')
+            buffer->lineno++;
        buffer->offset++;
     }
 
@@ -1009,7 +1022,7 @@ static parse_buffer *skip_utf8_bom(parse_buffer * const buffer)
 /* Parse an object - create a new root, and populate. */
 CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return_parse_end, cJSON_bool require_null_terminated)
 {
-    parse_buffer buffer = { 0, 0, 0, 0, { 0, 0, 0 } };
+    parse_buffer buffer = { 0, 0, 0, 0, 1, { 0, 0, 0 } };
     cJSON *item = NULL;
 
     /* reset error position */
@@ -1065,6 +1078,7 @@ fail:
         error local_error;
         local_error.json = (const unsigned char*)value;
         local_error.position = 0;
+        local_error.lineno = buffer.lineno;
 
         if (buffer.offset < buffer.length)
         {
