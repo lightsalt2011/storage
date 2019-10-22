@@ -219,13 +219,14 @@ CJSON_PUBLIC(void) cJSON_InitHooks(cJSON_Hooks* hooks)
 }
 
 /* Internal constructor. */
-static cJSON *cJSON_New_Item(const internal_hooks * const hooks)
+static cJSON *cJSON_New_Item(const internal_hooks * const hooks, int lineno)
 {
     cJSON* node = (cJSON*)hooks->allocate(sizeof(cJSON));
     if (node)
     {
         memset(node, '\0', sizeof(cJSON));
     }
+    node->lineno = lineno;
 
     return node;
 }
@@ -1039,7 +1040,7 @@ CJSON_PUBLIC(cJSON *) cJSON_ParseWithOpts(const char *value, const char **return
     buffer.offset = 0;
     buffer.hooks = global_hooks;
 
-    item = cJSON_New_Item(&global_hooks);
+    item = cJSON_New_Item(&global_hooks, buffer.lineno);
     if (item == NULL) /* memory fail */
     {
         goto fail;
@@ -1400,7 +1401,7 @@ static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buf
     do
     {
         /* allocate next item */
-        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks), input_buffer->lineno);
         if (new_item == NULL)
         {
             goto fail; /* allocation failure */
@@ -1554,7 +1555,7 @@ static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_bu
     do
     {
         /* allocate next item */
-        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks));
+        cJSON *new_item = cJSON_New_Item(&(input_buffer->hooks), input_buffer->lineno);
         if (new_item == NULL)
         {
             goto fail; /* allocation failure */
@@ -1856,7 +1857,7 @@ static cJSON *create_reference(const cJSON *item, const internal_hooks * const h
         return NULL;
     }
 
-    reference = cJSON_New_Item(hooks);
+    reference = cJSON_New_Item(hooks, CJSON_LINENO_INVALID);
     if (reference == NULL)
     {
         return NULL;
@@ -2273,7 +2274,7 @@ CJSON_PUBLIC(void) cJSON_ReplaceItemInObjectCaseSensitive(cJSON *object, const c
 /* Create basic types: */
 CJSON_PUBLIC(cJSON *) cJSON_CreateNull(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_NULL;
@@ -2284,7 +2285,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateNull(void)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateTrue(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_True;
@@ -2295,7 +2296,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateTrue(void)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateFalse(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_False;
@@ -2306,7 +2307,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateFalse(void)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateBool(cJSON_bool b)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = b ? cJSON_True : cJSON_False;
@@ -2317,7 +2318,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateBool(cJSON_bool b)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateNumber(double num)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_Number;
@@ -2343,7 +2344,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateNumber(double num)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateString(const char *string)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_String;
@@ -2360,7 +2361,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateString(const char *string)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateStringReference(const char *string)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if (item != NULL)
     {
         item->type = cJSON_String | cJSON_IsReference;
@@ -2372,7 +2373,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateStringReference(const char *string)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateObjectReference(const cJSON *child)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if (item != NULL) {
         item->type = cJSON_Object | cJSON_IsReference;
         item->child = (cJSON*)cast_away_const(child);
@@ -2382,7 +2383,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateObjectReference(const cJSON *child)
 }
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateArrayReference(const cJSON *child) {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if (item != NULL) {
         item->type = cJSON_Array | cJSON_IsReference;
         item->child = (cJSON*)cast_away_const(child);
@@ -2393,7 +2394,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateArrayReference(const cJSON *child) {
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type = cJSON_Raw;
@@ -2410,7 +2411,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateRaw(const char *raw)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateArray(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if(item)
     {
         item->type=cJSON_Array;
@@ -2421,7 +2422,7 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateArray(void)
 
 CJSON_PUBLIC(cJSON *) cJSON_CreateObject(void)
 {
-    cJSON *item = cJSON_New_Item(&global_hooks);
+    cJSON *item = cJSON_New_Item(&global_hooks, CJSON_LINENO_INVALID);
     if (item)
     {
         item->type = cJSON_Object;
@@ -2588,7 +2589,7 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
         goto fail;
     }
     /* Create new item */
-    newitem = cJSON_New_Item(&global_hooks);
+    newitem = cJSON_New_Item(&global_hooks, item->lineno);
     if (!newitem)
     {
         goto fail;

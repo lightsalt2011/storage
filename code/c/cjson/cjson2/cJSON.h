@@ -139,6 +139,8 @@ typedef int cJSON_bool;
 #define CJSON_NESTING_LIMIT 1000
 #endif
 
+#define CJSON_LINENO_INVALID  0
+
 /* returns the version of cJSON as a string */
 CJSON_PUBLIC(const char*) cJSON_Version(void);
 

@@ -78,8 +78,10 @@ int parse(const char* const s)
     }
 
     name = cJSON_GetObjectItem(root, "name");
-    if (NULL == name)
-        return -1;
+    if (NULL == name) {
+        ret = -1;
+        goto end;
+    }
     print_object(name);
 
     resolutions = cJSON_GetObjectItem(root, "resolutions");
@@ -102,20 +104,20 @@ char* read_file(const char* path)
 
     fd = open(path, O_RDONLY);
     if (fd == -1) {
-        printf("open file %s failed\n", path);
+        fprintf(stderr, "open file %s failed\n", path);
         return NULL;
     }
 
     if ((fstat(fd, &st) != 0) || (!S_ISREG(st.st_mode))) {
         close(fd);
-        printf("get file info failed");
+        fprintf(stderr, "get file info failed");
         return NULL;
     }
 
     buff_len = st.st_size;
     if (buff_len < 1) {
         close(fd);
-        printf("file length is invalid\n");
+        fprintf(stderr, "file length is invalid\n");
         return NULL;
     }
 
@@ -123,7 +125,7 @@ char* read_file(const char* path)
     ret  = read(fd, buff, buff_len);
     if (ret < 0) {
         close(fd);
-        printf("read file failed\n");
+        fprintf(stderr, "read file failed\n");
         return NULL;
     }
     close(fd);

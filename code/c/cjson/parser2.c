@@ -25,6 +25,19 @@ void print_object(const cJSON* obj)
     }
 }
 
+static char g_errbuf[CJSON_ERRBUF_SIZE];
+const char* parse_get_error(const cJSON* obj)
+{
+    if (cJSON_IsObject(obj) && obj->prev == NULL && obj->next == NULL) {
+        snprintf(g_errbuf, CJSON_ERRBUF_SIZE, "object: <root>, line: %d",
+                 obj->lineno);
+    } else {
+        snprintf(g_errbuf, CJSON_ERRBUF_SIZE, "object: %s, line: %d",
+                 obj->string, obj->lineno);
+    }
+    return g_errbuf;
+}
+
 int parse_resolution(cJSON* resolution)
 {
     cJSON* node = NULL;
@@ -32,6 +45,10 @@ int parse_resolution(cJSON* resolution)
     node = cJSON_GetObjectItem(resolution, "width");
     if (NULL == node)
         return -1;
+    if (!cJSON_IsNumber(node)) {
+        fprintf(stderr, "invalid \"width\" value: %s\n", parse_get_error(node));
+        return -1;
+    }
     print_object(node);
 
     node = cJSON_GetObjectItem(resolution, "height");
@@ -75,14 +92,19 @@ int parse(const char* const s)
     }
 
     name = cJSON_GetObjectItem(root, "name");
-    if (NULL == name)
-        return -1;
+    if (NULL == name) {
+        fprintf(stderr, "can't find \"name\": %s\n", parse_get_error(root));
+        ret = -1;
+        goto end;
+    }
     print_object(name);
 
     resolutions = cJSON_GetObjectItem(root, "resolutions");
-    if (NULL == resolutions || !cJSON_IsArray(resolutions))
-        return -1;
-    parse_resolutions(resolutions);
+    if (NULL == resolutions || !cJSON_IsArray(resolutions)) {
+        ret = -1;
+        goto end;
+    }
+    ret = parse_resolutions(resolutions);
 
 end:
     cJSON_Delete(root);
@@ -99,20 +121,20 @@ char* read_file(const char* path)
 
     fd = open(path, O_RDONLY);
     if (fd == -1) {
-        printf("open file %s failed\n", path);
+        fprintf(stderr, "open file %s failed\n", path);
         return NULL;
     }
 
     if ((fstat(fd, &st) != 0) || (!S_ISREG(st.st_mode))) {
         close(fd);
-        printf("get file info failed");
+        fprintf(stderr, "get file info failed");
         return NULL;
     }
 
     buff_len = st.st_size;
     if (buff_len < 1) {
         close(fd);
-        printf("file length is invalid\n");
+        fprintf(stderr, "file length is invalid\n");
         return NULL;
     }
 
@@ -120,7 +142,7 @@ char* read_file(const char* path)
     ret  = read(fd, buff, buff_len);
     if (ret < 0) {
         close(fd);
-        printf("read file failed\n");
+        fprintf(stderr, "read file failed\n");
         return NULL;
     }
     close(fd);
