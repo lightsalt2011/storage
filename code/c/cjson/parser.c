@@ -61,9 +61,9 @@ int parse_resolutions(cJSON* resolutions)
 
 int parse(const char* const s)
 {
-    int ret            = 0;
-    cJSON* root        = NULL;
-    cJSON* name        = NULL;
+    int ret = 0;
+    cJSON* root = NULL;
+    cJSON* name = NULL;
     cJSON* resolutions = NULL;
     const char* error_ptr;
 
@@ -85,9 +85,11 @@ int parse(const char* const s)
     print_object(name);
 
     resolutions = cJSON_GetObjectItem(root, "resolutions");
-    if (NULL == resolutions || !cJSON_IsArray(resolutions))
-        return -1;
-    parse_resolutions(resolutions);
+    if (NULL == resolutions || !cJSON_IsArray(resolutions)) {
+        ret = -1;
+        goto end;
+    }
+    ret = parse_resolutions(resolutions);
 
 end:
     cJSON_Delete(root);
@@ -122,7 +124,7 @@ char* read_file(const char* path)
     }
 
     buff = (char*)malloc(buff_len);
-    ret  = read(fd, buff, buff_len);
+    ret = read(fd, buff, buff_len);
     if (ret < 0) {
         close(fd);
         fprintf(stderr, "read file failed\n");
@@ -138,7 +140,7 @@ char* read_file(const char* path)
 
 int main(int argc, char** argv)
 {
-    int ret    = 0;
+    int ret = 0;
     char* buff = NULL;
 
     if (argc < 2) {
