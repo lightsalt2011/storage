@@ -14,11 +14,9 @@ builder_srcs  = $(wildcard cjson/*.c) builder.c
 builder_objs = $(builder_srcs:.c=.o)
 
 objs = $(parser_objs) $(parser2_objs) $(builder_objs)
-$(info before: $(objs))
 objs := $(sort $(objs))
-$(info after: $(objs))
 
-CFLAGS = -Wall -g -O0 -DDEBUG
+CFLAGS = -Wall -g -O0
 LDFLAGS =
 
 parser: $(parser_objs)
